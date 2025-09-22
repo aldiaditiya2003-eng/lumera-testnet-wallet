@@ -398,12 +398,22 @@
 
         // Check if Keplr is available
         async function checkKeplr() {
-            if (!window.keplr) {
-                alert('Please install Keplr extension first!');
-                return false;
+            // Wait a bit for Keplr to load
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            while (attempts < maxAttempts) {
+                if (window.keplr) {
+                    keplr = window.keplr;
+                    return true;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
             }
-            keplr = window.keplr;
-            return true;
+            
+            alert('Keplr extension not found! Please:\n1. Install Keplr extension\n2. Refresh this page\n3. Make sure Keplr is enabled for this site');
+            return false;
         }
 
         // Add Lumera chain to Keplr
@@ -420,21 +430,28 @@
 
         // Connect to Keplr wallet
         async function connectWallet() {
+            console.log('Connect wallet clicked');
+            
             if (!(await checkKeplr())) return;
 
             try {
                 connectBtn.disabled = true;
                 connectBtn.textContent = 'Connecting...';
 
+                console.log('Adding Lumera chain...');
                 // Add chain if not exists
                 await addLumeraChain();
 
+                console.log('Enabling chain...');
                 // Enable chain
                 await keplr.enable(CHAIN_CONFIG.chainId);
 
+                console.log('Getting offline signer...');
                 // Get offline signer
                 offlineSigner = keplr.getOfflineSigner(CHAIN_CONFIG.chainId);
                 accounts = await offlineSigner.getAccounts();
+
+                console.log('Accounts:', accounts);
 
                 if (accounts.length > 0) {
                     addressSpan.textContent = accounts[0].address;
@@ -443,7 +460,10 @@
                     connectBtn.textContent = 'Connected ✓';
                     connectBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
                     
+                    console.log('Refreshing balance...');
                     await refreshBalance();
+                    
+                    showSuccess('Wallet connected successfully!');
                 } else {
                     throw new Error('No accounts found');
                 }
@@ -677,7 +697,6 @@
         }
 
         // Event Listeners
-        connectBtn.addEventListener('click', connectWallet);
         refreshBtn.addEventListener('click', refreshBalance);
         loadHistoryBtn.addEventListener('click', loadTransactionHistory);
 
@@ -727,6 +746,35 @@
         // Initialize app
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Lumera Testnet Wallet dApp loaded');
+            
+            // Debug: Check if Keplr is available immediately
+            if (window.keplr) {
+                console.log('Keplr detected immediately');
+            } else {
+                console.log('Keplr not detected immediately, will check when connecting');
+            }
+            
+            // Add click event with debug
+            connectBtn.addEventListener('click', (e) => {
+                console.log('Connect button clicked!');
+                e.preventDefault();
+                connectWallet();
+            });
+            
+            // Also check periodically for Keplr
+            const checkKeplrPeriodically = setInterval(() => {
+                if (window.keplr) {
+                    console.log('Keplr detected!');
+                    connectBtn.textContent = 'Connect Keplr Wallet';
+                    connectBtn.disabled = false;
+                    clearInterval(checkKeplrPeriodically);
+                }
+            }, 1000);
+            
+            // Clear interval after 10 seconds
+            setTimeout(() => {
+                clearInterval(checkKeplrPeriodically);
+            }, 10000);
         });
     </script>
 </body>
