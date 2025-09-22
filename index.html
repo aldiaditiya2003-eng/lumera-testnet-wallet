@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lumera Testnet Wallet</title>
+    <title>LumeraHub - Lumera Protocol Wallet</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #ffffff;
             min-height: 100vh;
-            color: #333;
+            overflow-x: hidden;
         }
 
         .container {
@@ -26,755 +28,871 @@
         }
 
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 30px;
-            color: white;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .connect-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .connect-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .brand {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00d4aa, #00a3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .wallet-info {
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .wallet-info.active {
-            display: block;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00d4aa, #00a3ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(255, 99, 132, 0.2);
+            color: #ff6384;
+            border: 1px solid rgba(255, 99, 132, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
         }
 
         .balance-card {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 163, 255, 0.1));
+            border: 1px solid rgba(0, 212, 170, 0.3);
             text-align: center;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
         }
 
         .balance-amount {
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00d4aa, #00a3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
         }
 
-        .balance-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .balance-usd {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
         }
 
-        .grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00d4aa;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            color: #00d4aa;
+            border-bottom-color: #00d4aa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .form-group input, .form-group textarea {
+        .form-input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 16px;
             transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus, .form-group textarea:focus {
+        .form-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #00d4aa;
         }
 
-        .btn {
-            background: linear-gradient(45deg, #FF6B6B, #ee5a52);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .transaction-item {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
+        .address-display {
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
         }
 
-        .transaction-item:hover {
-            background: #e9ecef;
-            transform: translateY(-1px);
+        .tx-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tx-item:last-child {
+            border-bottom: none;
         }
 
         .tx-hash {
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: #6c757d;
-            word-break: break-all;
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+            color: #00a3ff;
+            cursor: pointer;
         }
 
-        .status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 5px;
+        .tx-amount {
+            font-weight: 600;
         }
 
-        .status.success {
-            background: #d4edda;
-            color: #155724;
+        .tx-amount.positive {
+            color: #00d4aa;
         }
 
-        .status.pending {
-            background: #fff3cd;
-            color: #856404;
+        .tx-amount.negative {
+            color: #ff6384;
         }
 
-        .status.failed {
-            background: #f8d7da;
-            color: #721c24;
+        .faucet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
         }
 
-        .faucet-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
+        .faucet-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
         }
 
-        .faucet-link {
-            background: #17a2b8;
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .faucet-link:hover {
-            background: #138496;
-            transform: translateY(-1px);
+        .faucet-name {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #00d4aa;
         }
 
         .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00d4aa;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(255, 99, 132, 0.2);
+            color: #ff6384;
+            border: 1px solid rgba(255, 99, 132, 0.3);
+        }
+
+        .qr-container {
             text-align: center;
             padding: 20px;
-            color: #6c757d;
         }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
             }
             
             .balance-amount {
-                font-size: 2rem;
+                font-size: 36px;
             }
             
-            .card {
-                padding: 20px;
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
             }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(255, 255, 255, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 50px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🌟 Lumera Testnet Wallet</h1>
-            <p>Utility dApp for Lumera Protocol Ecosystem</p>
-        </div>
-
-        <div class="card">
-            <button id="connectBtn" class="connect-btn">
-                Connect Keplr Wallet
-            </button>
-            
-            <div id="walletInfo" class="wallet-info">
-                <div class="balance-card">
-                    <div class="balance-amount" id="balance">0</div>
-                    <div class="balance-label">LUME Balance</div>
-                </div>
-                
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <strong>Address:</strong><br>
-                    <span id="address" style="word-break: break-all; font-family: monospace;"></span>
-                </div>
-                
-                <button id="refreshBtn" class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); margin-bottom: 20px;">
-                    🔄 Refresh Balance
-                </button>
+        <header class="header">
+            <div class="logo-section">
+                <img src="https://i.postimg.cc/L8wCsn64/z2-ONvvpp-400x400.png" alt="Lumera Protocol" class="logo">
+                <h1 class="brand">LumeraHub</h1>
             </div>
-        </div>
+            <div class="wallet-info">
+                <button id="connectBtn" class="btn btn-primary">Connect Keplr</button>
+                <button id="disconnectBtn" class="btn btn-secondary" style="display: none;">Disconnect</button>
+            </div>
+        </header>
 
-        <div id="appContent" style="display: none;">
-            <div class="grid">
-                <!-- Send Transaction Card -->
-                <div class="card">
-                    <h3 style="margin-bottom: 20px; color: #333;">💸 Send LUME</h3>
-                    <form id="sendForm">
-                        <div class="form-group">
-                            <label>Recipient Address</label>
-                            <input type="text" id="recipientAddress" placeholder="lumera1..." required>
-                        </div>
-                        <div class="form-group">
-                            <label>Amount (LUME)</label>
-                            <input type="number" id="sendAmount" step="0.000001" placeholder="0.0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Memo (Optional)</label>
-                            <input type="text" id="memo" placeholder="Transaction memo">
-                        </div>
-                        <button type="submit" class="btn">Send Transaction</button>
-                    </form>
+        <div id="walletConnected" style="display: none;">
+            <!-- Balance Card -->
+            <div class="card balance-card">
+                <div class="balance-amount" id="balanceAmount">0.00</div>
+                <div class="balance-usd">LUME</div>
+                <div style="margin-top: 15px;">
+                    <div class="address-display" id="walletAddress">Not connected</div>
+                    <button id="copyAddress" class="btn btn-secondary">Copy Address</button>
+                    <button id="showQR" class="btn btn-secondary">Show QR</button>
                 </div>
+            </div>
 
-                <!-- Faucet Links Card -->
+            <!-- Network Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="blockHeight">-</div>
+                    <div class="stat-label">Block Height</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="chainId">lumera-testnet-2</div>
+                    <div class="stat-label">Chain ID</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="validatorCount">-</div>
+                    <div class="stat-label">Validators</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="bondedTokens">-</div>
+                    <div class="stat-label">Bonded Tokens</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('send')">Send</button>
+                <button class="tab" onclick="switchTab('history')">History</button>
+                <button class="tab" onclick="switchTab('faucet')">Faucet</button>
+                <button class="tab" onclick="switchTab('staking')">Staking</button>
+            </div>
+
+            <!-- Send Tab -->
+            <div id="sendTab" class="tab-content active">
                 <div class="card">
-                    <h3 style="margin-bottom: 20px; color: #333;">🚰 Get Test Tokens</h3>
-                    <p style="margin-bottom: 15px; color: #666;">Need test LUME tokens? Use these faucets:</p>
-                    <div class="faucet-links">
-                        <a href="https://faucet-lumera.winnode.xyz/" target="_blank" class="faucet-link">Winnode Faucet</a>
-                        <a href="https://faucet.astrostake.xyz/" target="_blank" class="faucet-link">Astrostake Faucet</a>
-                        <a href="https://lumera-faucet-maouam.nodelab.my.id/" target="_blank" class="faucet-link">Nodelab Faucet</a>
-                        <a href="https://lumera-faucet.vercel.app/" target="_blank" class="faucet-link">Vercel Faucet</a>
-                        <a href="https://wh-faucet.netlify.app/" target="_blank" class="faucet-link">WH Faucet</a>
+                    <h3 style="margin-bottom: 20px; color: #00d4aa;">Send LUME</h3>
+                    <div class="form-group">
+                        <label class="form-label">Recipient Address</label>
+                        <input type="text" id="recipientAddress" class="form-input" placeholder="lumera1...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount (LUME)</label>
+                        <input type="number" id="sendAmount" class="form-input" placeholder="0.00" step="0.000001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Memo (Optional)</label>
+                        <input type="text" id="sendMemo" class="form-input" placeholder="Enter memo">
+                    </div>
+                    <button id="sendBtn" class="btn btn-primary" style="width: 100%;">Send Transaction</button>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyTab" class="tab-content">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: #00d4aa;">Transaction History</h3>
+                    <div class="tx-history" id="txHistory">
+                        <div style="text-align: center; color: rgba(255, 255, 255, 0.5); padding: 40px;">
+                            No transactions found
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Transaction History -->
-            <div class="card" style="margin-top: 25px;">
-                <h3 style="margin-bottom: 20px; color: #333;">📋 Transaction History</h3>
-                <button id="loadHistoryBtn" class="btn" style="background: linear-gradient(45deg, #6f42c1, #563d7c); margin-bottom: 20px;">
-                    Load Transaction History
-                </button>
-                <div id="transactionHistory">
-                    <div class="loading">Click "Load Transaction History" to see your recent transactions</div>
+            <!-- Faucet Tab -->
+            <div id="faucetTab" class="tab-content">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: #00d4aa;">Testnet Faucets</h3>
+                    <p style="margin-bottom: 20px; color: rgba(255, 255, 255, 0.7);">
+                        Get free testnet LUME tokens from these faucets:
+                    </p>
+                    <div class="faucet-grid">
+                        <div class="faucet-item">
+                            <div class="faucet-name">Winnode</div>
+                            <button onclick="openFaucet('https://faucet-lumera.winnode.xyz/')" class="btn btn-secondary">Request Tokens</button>
+                        </div>
+                        <div class="faucet-item">
+                            <div class="faucet-name">Astrostake</div>
+                            <button onclick="openFaucet('https://faucet.astrostake.xyz/')" class="btn btn-secondary">Request Tokens</button>
+                        </div>
+                        <div class="faucet-item">
+                            <div class="faucet-name">NodeLab</div>
+                            <button onclick="openFaucet('https://lumera-faucet-maouam.nodelab.my.id/')" class="btn btn-secondary">Request Tokens</button>
+                        </div>
+                        <div class="faucet-item">
+                            <div class="faucet-name">Vercel</div>
+                            <button onclick="openFaucet('https://lumera-faucet.vercel.app/')" class="btn btn-secondary">Request Tokens</button>
+                        </div>
+                        <div class="faucet-item">
+                            <div class="faucet-name">WH Faucet</div>
+                            <button onclick="openFaucet('https://wh-faucet.netlify.app/')" class="btn btn-secondary">Request Tokens</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staking Tab -->
+            <div id="stakingTab" class="tab-content">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: #00d4aa;">Staking</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">
+                        Stake your LUME tokens to help secure the network and earn rewards.
+                    </p>
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 18px; margin-bottom: 15px;">Available Balance</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #00d4aa;" id="stakingBalance">0.00 LUME</div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary">Delegate</button>
+                            <button class="btn btn-secondary">Undelegate</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- QR Modal -->
+        <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+            <div class="card" style="max-width: 400px; text-align: center;">
+                <h3 style="margin-bottom: 20px; color: #00d4aa;">Your Wallet Address</h3>
+                <div class="qr-container">
+                    <div class="qr-code">
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
+                    <div class="address-display" id="qrAddress"></div>
+                    <button onclick="closeQR()" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 1001;"></div>
+
+        <footer class="footer">
+            <p>LumeraHub - Built for Lumera Protocol Testnet | Made with ❤️ for Zealy Quest</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Chain ID: lumera-testnet-2 | RPC: lumera-testnet-rpc.linknode.org
+            </p>
+        </footer>
     </div>
 
     <script>
-        // Lumera Testnet Configuration
-        const CHAIN_CONFIG = {
-            chainId: "lumera-testnet-2",
-            chainName: "Lumera Testnet",
-            rpc: "https://lumera-testnet-rpc.linknode.org/",
-            rest: "https://lumera-testnet-api.linknode.org/",
-            bech32Config: {
-                bech32PrefixAccAddr: "lumera",
-                bech32PrefixAccPub: "lumera" + "pub",
-                bech32PrefixValAddr: "lumera" + "valoper",
-                bech32PrefixValPub: "lumera" + "valoperpub",
-                bech32PrefixConsAddr: "lumera" + "valcons",
-                bech32PrefixConsPub: "lumera" + "valconspub"
-            },
-            currencies: [
-                {
-                    coinDenom: "LUME",
-                    coinMinimalDenom: "ulume",
-                    coinDecimals: 6,
-                    coinGeckoId: "lumera"
-                }
-            ],
-            feeCurrencies: [
-                {
-                    coinDenom: "LUME",
-                    coinMinimalDenom: "ulume",
-                    coinDecimals: 6,
-                    coinGeckoId: "lumera"
-                }
-            ],
-            stakeCurrency: {
-                coinDenom: "LUME",
-                coinMinimalDenom: "ulume",
-                coinDecimals: 6,
-                coinGeckoId: "lumera"
+        // Configuration
+        const LUMERA_CONFIG = {
+            chainId: 'lumera-testnet-2',
+            chainName: 'Lumera Testnet',
+            rpc: 'https://lumera-testnet-rpc.linknode.org/',
+            rest: 'https://lumera-testnet-api.linknode.org/',
+            addressPrefix: 'lumera',
+            coinDenom: 'LUME',
+            coinMinimalDenom: 'ulume',
+            coinDecimals: 6,
+            gasPriceStep: {
+                low: 0.025,
+                average: 0.03,
+                high: 0.04
             }
         };
 
-        let keplr = null;
-        let offlineSigner = null;
-        let accounts = [];
+        let currentAddress = '';
+        let currentBalance = 0;
 
-        // UI Elements
-        const connectBtn = document.getElementById('connectBtn');
-        const walletInfo = document.getElementById('walletInfo');
-        const appContent = document.getElementById('appContent');
-        const addressSpan = document.getElementById('address');
-        const balanceSpan = document.getElementById('balance');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const sendForm = document.getElementById('sendForm');
-        const loadHistoryBtn = document.getElementById('loadHistoryBtn');
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkKeplrConnection();
+            updateNetworkStats();
+        });
 
-        // Check if Keplr is available
-        async function checkKeplr() {
-            // Wait a bit for Keplr to load
-            let attempts = 0;
-            const maxAttempts = 10;
-            
-            while (attempts < maxAttempts) {
-                if (window.keplr) {
-                    keplr = window.keplr;
-                    return true;
+        // Keplr Connection
+        async function connectKeplr() {
+            try {
+                if (!window.keplr) {
+                    showNotification('Please install Keplr wallet extension', 'error');
+                    return;
                 }
+
+                // Add Lumera chain to Keplr
+                await window.keplr.experimentalSuggestChain({
+                    chainId: LUMERA_CONFIG.chainId,
+                    chainName: LUMERA_CONFIG.chainName,
+                    rpc: LUMERA_CONFIG.rpc,
+                    rest: LUMERA_CONFIG.rest,
+                    bip44: {
+                        coinType: 118,
+                    },
+                    bech32Config: {
+                        bech32PrefixAccAddr: LUMERA_CONFIG.addressPrefix,
+                        bech32PrefixAccPub: LUMERA_CONFIG.addressPrefix + 'pub',
+                        bech32PrefixValAddr: LUMERA_CONFIG.addressPrefix + 'valoper',
+                        bech32PrefixValPub: LUMERA_CONFIG.addressPrefix + 'valoperpub',
+                        bech32PrefixConsAddr: LUMERA_CONFIG.addressPrefix + 'valcons',
+                        bech32PrefixConsPub: LUMERA_CONFIG.addressPrefix + 'valconspub',
+                    },
+                    currencies: [{
+                        coinDenom: LUMERA_CONFIG.coinDenom,
+                        coinMinimalDenom: LUMERA_CONFIG.coinMinimalDenom,
+                        coinDecimals: LUMERA_CONFIG.coinDecimals,
+                    }],
+                    feeCurrencies: [{
+                        coinDenom: LUMERA_CONFIG.coinDenom,
+                        coinMinimalDenom: LUMERA_CONFIG.coinMinimalDenom,
+                        coinDecimals: LUMERA_CONFIG.coinDecimals,
+                        gasPriceStep: LUMERA_CONFIG.gasPriceStep
+                    }],
+                    stakeCurrency: {
+                        coinDenom: LUMERA_CONFIG.coinDenom,
+                        coinMinimalDenom: LUMERA_CONFIG.coinMinimalDenom,
+                        coinDecimals: LUMERA_CONFIG.coinDecimals,
+                    }
+                });
+
+                await window.keplr.enable(LUMERA_CONFIG.chainId);
+                const offlineSigner = window.keplr.getOfflineSigner(LUMERA_CONFIG.chainId);
+                const accounts = await offlineSigner.getAccounts();
                 
-                await new Promise(resolve => setTimeout(resolve, 500));
-                attempts++;
-            }
-            
-            alert('Keplr extension not found! Please:\n1. Install Keplr extension\n2. Refresh this page\n3. Make sure Keplr is enabled for this site');
-            return false;
-        }
-
-        // Add Lumera chain to Keplr
-        async function addLumeraChain() {
-            try {
-                await keplr.experimentalSuggestChain(CHAIN_CONFIG);
-                return true;
-            } catch (error) {
-                console.error('Failed to add Lumera chain:', error);
-                showError('Failed to add Lumera chain to Keplr');
-                return false;
-            }
-        }
-
-        // Connect to Keplr wallet
-        async function connectWallet() {
-            console.log('Connect wallet clicked');
-            
-            if (!(await checkKeplr())) return;
-
-            try {
-                connectBtn.disabled = true;
-                connectBtn.textContent = 'Connecting...';
-
-                console.log('Adding Lumera chain...');
-                // Add chain if not exists
-                await addLumeraChain();
-
-                console.log('Enabling chain...');
-                // Enable chain
-                await keplr.enable(CHAIN_CONFIG.chainId);
-
-                console.log('Getting offline signer...');
-                // Get offline signer
-                offlineSigner = keplr.getOfflineSigner(CHAIN_CONFIG.chainId);
-                accounts = await offlineSigner.getAccounts();
-
-                console.log('Accounts:', accounts);
-
                 if (accounts.length > 0) {
-                    addressSpan.textContent = accounts[0].address;
-                    walletInfo.classList.add('active');
-                    appContent.style.display = 'block';
-                    connectBtn.textContent = 'Connected ✓';
-                    connectBtn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                    currentAddress = accounts[0].address;
+                    document.getElementById('walletAddress').textContent = currentAddress;
+                    document.getElementById('connectBtn').style.display = 'none';
+                    document.getElementById('disconnectBtn').style.display = 'inline-block';
+                    document.getElementById('walletConnected').style.display = 'block';
                     
-                    console.log('Refreshing balance...');
-                    await refreshBalance();
-                    
-                    showSuccess('Wallet connected successfully!');
-                } else {
-                    throw new Error('No accounts found');
+                    await updateBalance();
+                    await loadTransactionHistory();
+                    showNotification('Wallet connected successfully!', 'success');
                 }
             } catch (error) {
-                console.error('Connection failed:', error);
-                showError('Failed to connect wallet: ' + error.message);
-                connectBtn.disabled = false;
-                connectBtn.textContent = 'Connect Keplr Wallet';
+                console.error('Error connecting to Keplr:', error);
+                showNotification('Failed to connect wallet: ' + error.message, 'error');
             }
         }
 
-        // Get balance
-        async function getBalance(address) {
-            try {
-                const response = await axios.get(`${CHAIN_CONFIG.rest}/cosmos/bank/v1beta1/balances/${address}/by_denom?denom=ulume`);
-                return response.data.balance ? response.data.balance.amount : '0';
-            } catch (error) {
-                console.error('Failed to get balance:', error);
-                return '0';
+        function disconnectWallet() {
+            currentAddress = '';
+            currentBalance = 0;
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('disconnectBtn').style.display = 'none';
+            document.getElementById('walletConnected').style.display = 'none';
+            showNotification('Wallet disconnected', 'success');
+        }
+
+        async function checkKeplrConnection() {
+            if (window.keplr && await window.keplr.getKey(LUMERA_CONFIG.chainId)) {
+                await connectKeplr();
             }
         }
 
-        // Refresh balance
-        async function refreshBalance() {
-            if (accounts.length === 0) return;
-
+        // Balance Management
+        async function updateBalance() {
             try {
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = '🔄 Refreshing...';
-
-                const balance = await getBalance(accounts[0].address);
-                const formattedBalance = (parseInt(balance) / 1000000).toFixed(6);
-                balanceSpan.textContent = formattedBalance;
-
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = '🔄 Refresh Balance';
-            } catch (error) {
-                console.error('Failed to refresh balance:', error);
-                showError('Failed to refresh balance');
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = '🔄 Refresh Balance';
-            }
-        }
-
-        // Send transaction
-        async function sendTransaction(recipientAddress, amount, memo = '') {
-            if (!offlineSigner || accounts.length === 0) {
-                throw new Error('Wallet not connected');
-            }
-
-            try {
-                // Import CosmJS (simplified approach)
-                const { SigningStargateClient } = window;
+                const response = await axios.get(`${LUMERA_CONFIG.rest}/cosmos/bank/v1beta1/balances/${currentAddress}`);
+                const balances = response.data.balances;
+                const lumeBalance = balances.find(b => b.denom === LUMERA_CONFIG.coinMinimalDenom);
                 
-                if (!SigningStargateClient) {
-                    // Fallback to Keplr's sendTx if CosmJS not available
-                    const amountInUlume = Math.floor(parseFloat(amount) * 1000000).toString();
-                    
-                    const msg = {
-                        type: "cosmos-sdk/MsgSend",
-                        value: {
-                            from_address: accounts[0].address,
-                            to_address: recipientAddress,
-                            amount: [
-                                {
-                                    denom: "ulume",
-                                    amount: amountInUlume
-                                }
-                            ]
-                        }
-                    };
-
-                    const fee = {
-                        amount: [
-                            {
-                                denom: "ulume",
-                                amount: "5000"
-                            }
-                        ],
-                        gas: "200000"
-                    };
-
-                    const result = await keplr.sendTx(
-                        CHAIN_CONFIG.chainId,
-                        JSON.stringify({
-                            msgs: [msg],
-                            fee: fee,
-                            memo: memo
-                        }),
-                        "sync"
-                    );
-
-                    return result;
+                if (lumeBalance) {
+                    currentBalance = parseInt(lumeBalance.amount) / Math.pow(10, LUMERA_CONFIG.coinDecimals);
                 } else {
-                    // Use CosmJS if available
-                    const client = await SigningStargateClient.connectWithSigner(
-                        CHAIN_CONFIG.rpc,
-                        offlineSigner
-                    );
+                    currentBalance = 0;
+                }
+                
+                document.getElementById('balanceAmount').textContent = currentBalance.toFixed(6);
+                document.getElementById('stakingBalance').textContent = currentBalance.toFixed(6) + ' LUME';
+            } catch (error) {
+                console.error('Error fetching balance:', error);
+                showNotification('Failed to fetch balance', 'error');
+            }
+        }
 
-                    const amountInUlume = Math.floor(parseFloat(amount) * 1000000).toString();
+        // Send Transaction
+        async function sendTransaction() {
+            const recipientAddress = document.getElementById('recipientAddress').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            const memo = document.getElementById('sendMemo').value;
 
-                    const sendMsg = {
-                        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+            if (!recipientAddress || !amount || amount <= 0) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (amount > currentBalance) {
+                showNotification('Insufficient balance', 'error');
+                return;
+            }
+
+            try {
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.innerHTML = '<span class="loading"></span> Sending...';
+                sendBtn.disabled = true;
+
+                const amountInMicroLume = Math.floor(amount * Math.pow(10, LUMERA_CONFIG.coinDecimals));
+                
+                // Use Keplr to send transaction
+                await window.keplr.sendTx(
+                    LUMERA_CONFIG.chainId,
+                    {
+                        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
                         value: {
-                            fromAddress: accounts[0].address,
+                            fromAddress: currentAddress,
                             toAddress: recipientAddress,
-                            amount: [
-                                {
-                                    denom: "ulume",
-                                    amount: amountInUlume
-                                }
-                            ]
+                            amount: [{
+                                denom: LUMERA_CONFIG.coinMinimalDenom,
+                                amount: amountInMicroLume.toString()
+                            }]
                         }
-                    };
+                    },
+                    {
+                        amount: [{
+                            denom: LUMERA_CONFIG.coinMinimalDenom,
+                            amount: '5000'
+                        }],
+                        gas: '200000'
+                    },
+                    memo
+                );
 
-                    const fee = {
-                        amount: [
-                            {
-                                denom: "ulume",
-                                amount: "5000"
-                            }
-                        ],
-                        gas: "200000"
-                    };
+                showNotification('Transaction sent successfully!', 'success');
+                document.getElementById('recipientAddress').value = '';
+                document.getElementById('sendAmount').value = '';
+                document.getElementById('sendMemo').value = '';
+                
+                setTimeout(() => {
+                    updateBalance();
+                    loadTransactionHistory();
+                }, 3000);
 
-                    const result = await client.signAndBroadcast(
-                        accounts[0].address,
-                        [sendMsg],
-                        fee,
-                        memo
-                    );
-
-                    return result;
-                }
             } catch (error) {
-                console.error('Send transaction failed:', error);
-                throw error;
+                console.error('Error sending transaction:', error);
+                showNotification('Failed to send transaction: ' + error.message, 'error');
+            } finally {
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.innerHTML = 'Send Transaction';
+                sendBtn.disabled = false;
             }
         }
 
-        // Get transaction history
-        async function getTransactionHistory(address) {
-            try {
-                const response = await axios.get(`${CHAIN_CONFIG.rest}/cosmos/tx/v1beta1/txs?events=message.sender='${address}'&order_by=ORDER_BY_DESC&limit=10`);
-                return response.data.tx_responses || [];
-            } catch (error) {
-                console.error('Failed to get transaction history:', error);
-                return [];
-            }
-        }
-
-        // Load transaction history
+        // Transaction History
         async function loadTransactionHistory() {
-            if (accounts.length === 0) return;
-
             try {
-                loadHistoryBtn.disabled = true;
-                loadHistoryBtn.textContent = 'Loading...';
+                const response = await axios.get(`${LUMERA_CONFIG.rest}/cosmos/tx/v1beta1/txs?events=transfer.sender='${currentAddress}'&order_by=ORDER_BY_DESC&limit=20`);
+                const txs = response.data.tx_responses || [];
                 
-                const historyDiv = document.getElementById('transactionHistory');
-                historyDiv.innerHTML = '<div class="loading">Loading transaction history...</div>';
-
-                const transactions = await getTransactionHistory(accounts[0].address);
-                
-                if (transactions.length === 0) {
-                    historyDiv.innerHTML = '<div class="loading">No transactions found</div>';
-                } else {
-                    let historyHTML = '';
-                    transactions.forEach(tx => {
-                        const status = tx.code === 0 ? 'success' : 'failed';
-                        const date = new Date(tx.timestamp).toLocaleString();
-                        
-                        historyHTML += `
-                            <div class="transaction-item">
-                                <div><strong>Hash:</strong> <span class="tx-hash">${tx.txhash}</span></div>
-                                <div><strong>Height:</strong> ${tx.height}</div>
-                                <div><strong>Time:</strong> ${date}</div>
-                                <div><strong>Gas Used:</strong> ${tx.gas_used}</div>
-                                <div class="status ${status}">${status.toUpperCase()}</div>
-                            </div>
-                        `;
-                    });
-                    historyDiv.innerHTML = historyHTML;
+                const historyDiv = document.getElementById('txHistory');
+                if (txs.length === 0) {
+                    historyDiv.innerHTML = '<div style="text-align: center; color: rgba(255, 255, 255, 0.5); padding: 40px;">No transactions found</div>';
+                    return;
                 }
 
-                loadHistoryBtn.disabled = false;
-                loadHistoryBtn.textContent = 'Load Transaction History';
+                historyDiv.innerHTML = '';
+                txs.forEach(tx => {
+                    const txItem = document.createElement('div');
+                    txItem.className = 'tx-item';
+                    
+                    const isReceived = tx.logs.some(log => 
+                        log.events.some(event => 
+                            event.type === 'transfer' && 
+                            event.attributes.some(attr => attr.key === 'recipient' && attr.value === currentAddress)
+                        )
+                    );
+                    
+                    const amount = extractTransferAmount(tx, currentAddress);
+                    
+                    txItem.innerHTML = `
+                        <div>
+                            <div class="tx-hash" onclick="openTxExplorer('${tx.txhash}')">${tx.txhash.substring(0, 16)}...</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">${new Date(tx.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div class="tx-amount ${isReceived ? 'positive' : 'negative'}">
+                            ${isReceived ? '+' : '-'}${amount} LUME
+                        </div>
+                    `;
+                    
+                    historyDiv.appendChild(txItem);
+                });
             } catch (error) {
-                console.error('Failed to load transaction history:', error);
-                document.getElementById('transactionHistory').innerHTML = '<div class="error">Failed to load transaction history</div>';
-                loadHistoryBtn.disabled = false;
-                loadHistoryBtn.textContent = 'Load Transaction History';
+                console.error('Error loading transaction history:', error);
             }
         }
 
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            errorDiv.style.position = 'fixed';
-            errorDiv.style.top = '20px';
-            errorDiv.style.right = '20px';
-            errorDiv.style.zIndex = '1000';
-            errorDiv.style.maxWidth = '400px';
-            
-            document.body.appendChild(errorDiv);
-            
-            setTimeout(() => {
-                document.body.removeChild(errorDiv);
-            }, 5000);
+        function extractTransferAmount(tx, address) {
+            try {
+                if (tx.logs && tx.logs[0] && tx.logs[0].events) {
+                    for (let event of tx.logs[0].events) {
+                        if (event.type === 'transfer') {
+                            const amountAttr = event.attributes.find(attr => attr.key === 'amount');
+                            if (amountAttr) {
+                                const match = amountAttr.value.match(/(\d+)ulume/);
+                                if (match) {
+                                    return (parseInt(match[1]) / Math.pow(10, LUMERA_CONFIG.coinDecimals)).toFixed(6);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error extracting amount:', error);
+            }
+            return '0.000000';
         }
 
-        // Show success message
-        function showSuccess(message) {
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success';
-            successDiv.textContent = message;
-            successDiv.style.position = 'fixed';
-            successDiv.style.top = '20px';
-            successDiv.style.right = '20px';
-            successDiv.style.zIndex = '1000';
-            successDiv.style.maxWidth = '400px';
-            
-            document.body.appendChild(successDiv);
+        // Network Stats
+        async function updateNetworkStats() {
+            try {
+                // Block height
+                const statusResponse = await axios.get(`${LUMERA_CONFIG.rpc}/status`);
+                const blockHeight = statusResponse.data.result.sync_info.latest_block_height;
+                document.getElementById('blockHeight').textContent = parseInt(blockHeight).toLocaleString();
+
+                // Validator count and bonded tokens
+                const validatorsResponse = await axios.get(`${LUMERA_CONFIG.rest}/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED`);
+                const validators = validatorsResponse.data.validators || [];
+                document.getElementById('validatorCount').textContent = validators.length;
+
+                const totalBonded = validators.reduce((sum, validator) => {
+                    return sum + parseInt(validator.tokens || 0);
+                }, 0);
+                const bondedInLume = totalBonded / Math.pow(10, LUMERA_CONFIG.coinDecimals);
+                document.getElementById('bondedTokens').textContent = bondedInLume.toLocaleString(undefined, {maximumFractionDigits: 0}) + ' LUME';
+
+            } catch (error) {
+                console.error('Error fetching network stats:', error);
+            }
+        }
+
+        // Utility Functions
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function copyAddress() {
+            if (currentAddress) {
+                navigator.clipboard.writeText(currentAddress);
+                showNotification('Address copied to clipboard!', 'success');
+            }
+        }
+
+        function showQR() {
+            if (currentAddress) {
+                document.getElementById('qrAddress').textContent = currentAddress;
+                QRCode.toCanvas(document.getElementById('qrCanvas'), currentAddress, function (error) {
+                    if (error) console.error(error);
+                });
+                document.getElementById('qrModal').style.display = 'flex';
+            }
+        }
+
+        function closeQR() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+
+        function openFaucet(url) {
+            window.open(url, '_blank');
+        }
+
+        function openTxExplorer(txHash) {
+            // Since there might not be a dedicated explorer, we'll copy the hash
+            navigator.clipboard.writeText(txHash);
+            showNotification('Transaction hash copied to clipboard!', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.className = `alert alert-${type}`;
+            notification.textContent = message;
+            notification.style.display = 'block';
             
             setTimeout(() => {
-                document.body.removeChild(successDiv);
+                notification.style.display = 'none';
             }, 5000);
         }
 
         // Event Listeners
-        refreshBtn.addEventListener('click', refreshBalance);
-        loadHistoryBtn.addEventListener('click', loadTransactionHistory);
+        document.getElementById('connectBtn').addEventListener('click', connectKeplr);
+        document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+        document.getElementById('sendBtn').addEventListener('click', sendTransaction);
+        document.getElementById('copyAddress').addEventListener('click', copyAddress);
+        document.getElementById('showQR').addEventListener('click', showQR);
 
-        sendForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const recipientAddress = document.getElementById('recipientAddress').value;
-            const sendAmount = document.getElementById('sendAmount').value;
-            const memo = document.getElementById('memo').value;
-
-            if (!recipientAddress || !sendAmount) {
-                showError('Please fill in recipient address and amount');
-                return;
-            }
-
-            if (!recipientAddress.startsWith('lumera1')) {
-                showError('Invalid Lumera address format');
-                return;
-            }
-
-            try {
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Sending...';
-
-                const result = await sendTransaction(recipientAddress, sendAmount, memo);
-                
-                if (result.code === 0 || result.transactionHash) {
-                    showSuccess('Transaction sent successfully!');
-                    sendForm.reset();
-                    await refreshBalance();
-                } else {
-                    throw new Error('Transaction failed');
-                }
-
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Transaction';
-            } catch (error) {
-                console.error('Send failed:', error);
-                showError('Failed to send transaction: ' + error.message);
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Transaction';
+        // Close QR modal when clicking outside
+        document.getElementById('qrModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQR();
             }
         });
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Lumera Testnet Wallet dApp loaded');
-            
-            // Debug: Check if Keplr is available immediately
-            if (window.keplr) {
-                console.log('Keplr detected immediately');
-            } else {
-                console.log('Keplr not detected immediately, will check when connecting');
+        // Auto-refresh data every 30 seconds
+        setInterval(() => {
+            if (currentAddress) {
+                updateBalance();
+                updateNetworkStats();
             }
-            
-            // Add click event with debug
-            connectBtn.addEventListener('click', (e) => {
-                console.log('Connect button clicked!');
-                e.preventDefault();
-                connectWallet();
-            });
-            
-            // Also check periodically for Keplr
-            const checkKeplrPeriodically = setInterval(() => {
-                if (window.keplr) {
-                    console.log('Keplr detected!');
-                    connectBtn.textContent = 'Connect Keplr Wallet';
-                    connectBtn.disabled = false;
-                    clearInterval(checkKeplrPeriodically);
-                }
-            }, 1000);
-            
-            // Clear interval after 10 seconds
-            setTimeout(() => {
-                clearInterval(checkKeplrPeriodically);
-            }, 10000);
+        }, 30000);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('qrModal').style.display === 'flex') {
+                closeQR();
+            }
         });
     </script>
 </body>
